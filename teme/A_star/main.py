@@ -236,10 +236,67 @@ def uniform_cost(gr, nrSolutiiCautate=1):
             else:
                 c.append(s)
 
+def ida_star(gr, nrSolutiiCautate):
+    limita = gr.euristica_banala(gr.start[0], "euristica_banala")
+    c = [NodParcurgere(gr.start[0],
+                       gr.start[1],
+                       gr.start[2],
+                       gr.start[4],
+                       gr.start[4],
+                       None,
+                       gr.start[3],
+                       0,
+                       0)]
+
+    while True:
+        print("Limita de pornire: ", limita)
+
+        nrSolutiiCautate, rez = construieste_drum(
+            gr, c[0], limita, nrSolutiiCautate
+        )
+        if rez == "gata":
+            break
+        if rez == float("inf"):
+            print("Nu exista solutii!")
+            break
+        limita = rez
+        print(">>> Limita noua: ", limita)
+        input()
+
+
+def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
+    if nodCurent.f > limita:
+        return nrSolutiiCautate, nodCurent.f
+
+    if gr.testeaza_scop(nodCurent) and nodCurent.f == limita:
+        print("Solutie: ")
+        nodCurent.afisDrum()
+        print(limita)
+        print("\n----------------\n")
+        input()
+        nrSolutiiCautate -= 1
+        if nrSolutiiCautate == 0:
+            return nrSolutiiCautate, "gata"
+    lSuccesori = gr.genereazaSuccesori(nodCurent)
+    minim = float("inf")
+    for s in lSuccesori:
+        nrSolutiiCautate, rez = construieste_drum(gr, s, limita, nrSolutiiCautate)
+        if rez == "gata":
+            return nrSolutiiCautate, "gata"
+        # print("Compara ", rez, " cu ", minim)
+        if rez < minim:
+            minim = rez
+            # print("Noul minim: ", minim)
+    return nrSolutiiCautate, minim
+
+
 
 
 gr = Graph("input.txt")
-print("\n\n##################\nSolutie obtinuta cu A*:")
+
+# print("\n\n##################\nSolutie obtinuta cu A*:")
 # a_star_optim(gr, "euristica_admisibila_2")
 # a_star(gr, 2, "euristica banala")
-uniform_cost(gr, nrSolutiiCautate=2)
+# uniform_cost(gr, nrSolutiiCautate=2)
+
+ida_star(gr, nrSolutiiCautate=3)
