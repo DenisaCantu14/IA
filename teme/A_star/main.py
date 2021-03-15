@@ -93,7 +93,7 @@ class Graph:
             sir += "{} = {}\n".format(k, v)
         return sir
 
-    def genereazaSuccesori(self, nodCurent, tip_euristica):
+    def genereazaSuccesori(self, nodCurent, tip_euristica="euristica_banala"):
         listaSuccesori = []
         for idx in range (len(self.noduri)):
             dist = math.sqrt((nodCurent.x - self.noduri[idx][1]) ** 2 + (nodCurent.y - self.noduri[idx][2]) ** 2)
@@ -201,9 +201,45 @@ def a_star(gr, nrSolutiiCautate=2, tip_euristica="euristica banala"):
                 i += 1
             c.insert(i, s)
 
+def uniform_cost(gr, nrSolutiiCautate=1):
+    c = [NodParcurgere(gr.start[0],
+                       gr.start[1],
+                       gr.start[2],
+                       gr.start[4],
+                       gr.start[4],
+                       None,
+                       gr.start[3],
+                       0,
+                       0)]
+
+    while len(c) > 0:
+
+        nodCurent = c.pop(0)
+
+        if gr.testeaza_scop(nodCurent):
+            print("Solutie: ", end="\n")
+            nodCurent.afisDrum()
+            print("\n----------------\n")
+            nrSolutiiCautate -= 1
+            if nrSolutiiCautate == 0:
+                return
+        lSuccesori = gr.genereazaSuccesori(nodCurent)
+        for s in lSuccesori:
+            i = 0
+            gasit_loc = False
+            for i in range(len(c)):
+                if c[i].cost > s.cost:
+                    gasit_loc = True
+                    break
+            if gasit_loc:
+                c.insert(i, s)
+            else:
+                c.append(s)
+
+
 
 gr = Graph("input.txt")
 print("\n\n##################\nSolutie obtinuta cu A*:")
 # a_star_optim(gr, "euristica_admisibila_2")
-a_star(gr, 2, "euristica banala")
-
+# a_star(gr, 2, "euristica banala")
+uniform_cost(gr, nrSolutiiCautate=2)
