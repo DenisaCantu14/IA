@@ -26,18 +26,19 @@ class NodParcurgere:
             nod = nod.parinte
         return l
 
-    def afisDrum(self, afisCost=False, afisLung=False):
+    def afisDrum(self):
         l = self.obtineDrum()
+        print("1) Broscuta se afla pe frunza initiala ",str(l[0]) )
+        print("Greutate broscuta: ", l[0].gCurent)
         i = 2
         for nod in l:
             if nod.parinte is not None:
-                print(i, ") Broscuta a sarit de la ", str(nod.parinte), " la ", str(nod) )
-                print("Broscuta a mancat ", nod.parinte.insecteMancate, " insecte. Greutate broscuta: ", nod.parinte.gCurent)
+                print(i, ") Broscuta a sarit de la", str(nod.parinte), "la", str(nod) )
+                print("Broscuta a mancat", nod.parinte.insecteMancate, "insecte. Greutate broscuta:", nod.parinte.gCurent)
+                i += 1
 
-        if afisCost:
-            print("Cost: ", self.cost)
-        if afisCost:
-            print("Nr noduri: ", len(l))
+
+        print("Broscuta a ajuns la mal in", len(l), "sarituri.")
         return len(l)
 
     def contineInDrum(self, infoNodNou):
@@ -71,15 +72,17 @@ class Graph:
         self.start = (nod[0], int(nod[1]), int(nod[2]), int(nod[3]), int(nod[4]) )
         self.noduri = []
         self.scopuri = []
-        mini = 99999999
+        maxi = -1
         for i in range (4, len(infoFisier)):
             nod = infoFisier[i].split()
             self.noduri.append((nod[0], int(nod[1]), int(nod[2]), int(nod[3]), int(nod[4])))
             dist = int(nod[1])* int(nod[1]) + int(nod[2])*int(nod[2])
-            if mini > math.sqrt(dist):
+            if maxi < math.sqrt(dist):
+                self.scopuri = []
                 mini = math.sqrt(dist)
                 self.scopuri.append(nod[0])
-
+            elif maxi == math.sqrt(dist):
+                self.scopuri.append(nod[0])
 
     def testeaza_scop(self, nodCurent):
         return nodCurent.info in self.scopuri
@@ -125,7 +128,7 @@ def a_star(gr, tip_euristica):
 
         if gr.testeaza_scop(nodCurent):
             print("Solutie: ")
-            nodCurent.afisDrum(afisLung=True, afisCost=True)
+            nodCurent.afisDrum()
             print("\n--------------------\n")
             return
 
