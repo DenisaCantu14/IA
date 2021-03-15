@@ -109,7 +109,7 @@ class Graph:
                                        0,
                                        nodCurent.cost + 1,
                                        self.euristica_banala(self.noduri[idx][0], tip_euristica))
-                if not nodCurent.contineInDrum(nodNou):
+                if not nodCurent.contineInDrum(nodNou.info):
                     listaSuccesori.append(nodNou)
         return listaSuccesori
 
@@ -118,8 +118,16 @@ class Graph:
         return 0 if infoNod in self.scopuri else 1
 
 
-def a_star(gr, tip_euristica):
-    c = [NodParcurgere(gr.start[0], gr.start[1], gr.start[2], gr.start[4], gr.start[4], None, gr.start[3], 0, gr.euristica_banala(gr.start[0], tip_euristica))]
+def a_star_optim(gr, tip_euristica):
+    c = [NodParcurgere(gr.start[0],
+                       gr.start[1],
+                       gr.start[2],
+                       gr.start[4],
+                       gr.start[4],
+                       None,
+                       gr.start[3],
+                       0,
+                       gr.euristica_banala(gr.start[0], tip_euristica))]
     closed = []
 
     while len(c) > 0:
@@ -161,8 +169,41 @@ def a_star(gr, tip_euristica):
                 i += 1
             c.insert(i, s)
 
+def a_star(gr, nrSolutiiCautate=2, tip_euristica="euristica banala"):
+    c = [NodParcurgere(gr.start[0],
+                       gr.start[1],
+                       gr.start[2],
+                       gr.start[4],
+                       gr.start[4],
+                       None,
+                       gr.start[3],
+                       0,
+                       gr.euristica_banala(gr.start[0], tip_euristica))]
+
+    while len(c) > 0:
+
+        nodCurent = c.pop(0)
+
+        if gr.testeaza_scop(nodCurent):
+            print("Solutie: ", end="\n")
+            nodCurent.afisDrum()
+            print("\n----------------\n")
+            input()
+            nrSolutiiCautate -= 1
+            if nrSolutiiCautate == 0:
+                return
+        lSuccesori = gr.genereazaSuccesori(nodCurent, tip_euristica)
+        for s in lSuccesori:
+            i = 0
+            while i < len(c):
+                if c[i].f >= s.f:
+                    break
+                i += 1
+            c.insert(i, s)
+
 
 gr = Graph("input.txt")
 print("\n\n##################\nSolutie obtinuta cu A*:")
-a_star(gr, "euristica_admisibila_2")
+a_star_optim(gr, "euristica_admisibila_2")
+a_star(gr, 2, "euristica banala")
 
