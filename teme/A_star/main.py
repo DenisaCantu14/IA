@@ -204,6 +204,6 @@ def a_star(gr, nrSolutiiCautate=2, tip_euristica="euristica banala"):
 
 gr = Graph("input.txt")
 print("\n\n##################\nSolutie obtinuta cu A*:")
-a_star_optim(gr, "euristica_admisibila_2")
+# a_star_optim(gr, "euristica_admisibila_2")
 a_star(gr, 2, "euristica banala")
 
