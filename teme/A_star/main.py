@@ -4,18 +4,18 @@ import timeit
 
 class NodParcurgere:
 
-    def __init__(self, info, x, y, greutateM, greutateC, parinte, insecte, insecteM, cost, h ):
-        # info = (x, y, greutate)
+    def __init__(self, info, x, y, insecte, insecteM, greutateM, greutateC, parinte, cost, h ):
+        
         self.info = info
         self.x = x
         self.y = y
-        self.gCurent = greutateC
-        self.gMaxima = greutateM
-        self.cost = cost
-        self.parinte = parinte
-        self.h = h
         self.insecte = insecte
         self.insecteMancate = insecteM
+        self.gMaxima = greutateM
+        self.gCurenta = greutateC
+        self.parinte = parinte
+        self.cost = cost
+        self.h = h
         self.f = self.cost + self.h
 
     def obtineDrum(self):
@@ -30,12 +30,12 @@ class NodParcurgere:
         g = open(file, "a")
         l = self.obtineDrum()
         g.write("1) Broscuta se afla pe frunza initiala " + str(l[0]) + '\n' )
-        g.write("Greutate broscuta: " + str(l[0].gCurent) + '\n')
+        g.write("Greutate broscuta: " + str(l[0].gCurenta) + '\n')
         i = 2
         for nod in l:
             if nod.parinte is not None:
                 g.write(str(i) +  ") Broscuta a sarit de la " + str(nod.parinte) + " la " + str(nod) + '\n')
-                g.write("Broscuta a mancat " + str(nod.parinte.insecteMancate) + " insecte. Greutate broscuta: " + str(nod.parinte.gCurent) + '\n')
+                g.write("Broscuta a mancat " + str(nod.parinte.insecteMancate) + " insecte. Greutate broscuta: " + str(nod.parinte.gCurenta) + '\n')
                 i += 1
 
 
@@ -101,17 +101,17 @@ class Graph:
         listaSuccesori = []
         for idx in range (len(self.noduri)):
             dist = math.sqrt((nodCurent.x - self.noduri[idx][1]) ** 2 + (nodCurent.y - self.noduri[idx][2]) ** 2)
-            if nodCurent.gCurent / 3 < dist or nodCurent.gCurent - 1 > self.noduri[idx][4]:
+            if nodCurent.gCurenta / 3 < dist or nodCurent.gCurenta - 1 > self.noduri[idx][4]:
                 continue
             else:
                 nodNou = NodParcurgere(self.noduri[idx][0],  # info
                                        self.noduri[idx][1],  # x
                                        self.noduri[idx][2],  # y
-                                       self.noduri[idx][4],  # gm
-                                       self.noduri[idx][3] + nodCurent.gCurent - 1,  # greuatte curenta
-                                       nodCurent,
                                        0,
                                        self.noduri[idx][3],
+                                       self.noduri[idx][4],  # gm
+                                       self.noduri[idx][3] + nodCurent.gCurenta - 1,  # greuatte curenta
+                                       nodCurent,
                                        nodCurent.cost + 1,
                                        self.euristica_banala(self.noduri[idx][0], tip_euristica))
                 if not nodCurent.contineInDrum(nodNou.info):
@@ -129,11 +129,11 @@ def a_star_optim(gr, tip_euristica):
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
+                       0,
+                       gr.start[3],
                        gr.start[4],
                        gr.g,
                        None,
-                       gr.start[3],
-                       0,
                        0,
                        gr.euristica_banala(gr.start[0], tip_euristica))]
     closed = []
@@ -191,11 +191,11 @@ def a_star(gr, nrSolutiiCautate, tip_euristica="euristica banala"):
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
+                       0,
+                       gr.start[3],
                        gr.start[4],
                        gr.g,
                        None,
-                       gr.start[3],
-                       0,
                        0,
                        gr.euristica_banala(gr.start[0], tip_euristica))]
 
@@ -232,11 +232,11 @@ def uniform_cost(gr, nrSolutiiCautate=1):
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
+                       0,
+                       gr.start[3],
                        gr.start[4],
                        gr.g,
                        None,
-                       gr.start[3],
-                       0,
                        0,
                        0)]
 
@@ -278,23 +278,26 @@ def ida_star(gr, nrSolutiiCautate):
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
+                       0,
+                       gr.start[3],
                        gr.start[4],
                        gr.g,
                        None,
-                       gr.start[3],
-                       0,
                        0,
                        0)]
 
     while True:
         # print("Limita de pornire: ", limita)
 
-        nrSolutiiCautate, rez = construieste_drum(gr, c[0], limita, nrSolutiiCautate)
+        nrSolutiiCautate, rez = construieste_drum(gr, c[0], limita, nrSolutiiCautate, start)
         if rez == "gata":
             break
         if rez == float("inf"):
+            stop = timeit.default_timer()
+            time = stop - start
             g = open("output/ida_star.txt", "a")
-            g.write("Nu exista solutii!:\n\n")
+            g.write("Nu exista solutii!\n")
+            g.write("Timp: " + str(time) + '\n\n')
             g.close()
             break
         limita = rez
@@ -302,7 +305,7 @@ def ida_star(gr, nrSolutiiCautate):
         # input()
 
 
-def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
+def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate, start):
     if nodCurent.f > limita:
         return nrSolutiiCautate, nodCurent.f
 
@@ -311,9 +314,11 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
         g.write("Solutie: \n\n")
         g.close()
         nodCurent.afisDrum("output/ida_star.txt")
-
+        stop = timeit.default_timer()
+        time = stop - start
         g = open("output/ida_star.txt", "a")
-        g.write("Limita : " + str(limita))
+        g.write("Limita : " + str(limita) + '\n')
+        g.write("Timp: " + str(time) + '\n\n')
         g.write("\n\n----------------\n\n")
         g.close()
 
@@ -323,7 +328,7 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
     lSuccesori = gr.genereazaSuccesori(nodCurent)
     minim = float("inf")
     for s in lSuccesori:
-        nrSolutiiCautate, rez = construieste_drum(gr, s, limita, nrSolutiiCautate)
+        nrSolutiiCautate, rez = construieste_drum(gr, s, limita, nrSolutiiCautate, start)
         if rez == "gata":
             return nrSolutiiCautate, "gata"
         # print("Compara ", rez, " cu ", minim)
@@ -336,14 +341,12 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
 
 
 
-# gr = Graph(sys.argv[1])
-# nrSolutiiCautate = int(sys.argv[2])
-# timeOut = int(sys.argv[3])
-gr = Graph("input/input.txt")
-nrSolutiiCautate = int(2)
-timeOut = int(4)
+gr = Graph(sys.argv[1])
+nrSolutiiCautate = int(sys.argv[2])
+timeOut = int(sys.argv[3])
+
 
 # a_star_optim(gr, "euristica_banala")
-a_star(gr, nrSolutiiCautate, "euristica banala")
+# a_star(gr, nrSolutiiCautate, "euristica banala")
 # uniform_cost(gr, nrSolutiiCautate)
-#ida_star(gr, nrSolutiiCautate)
+ida_star(gr, nrSolutiiCautate)
