@@ -1,6 +1,5 @@
-
+import sys
 import math
-
 
 class NodParcurgere:
 
@@ -26,19 +25,21 @@ class NodParcurgere:
             nod = nod.parinte
         return l
 
-    def afisDrum(self):
+    def afisDrum(self, file):
+        g = open(file, "a")
         l = self.obtineDrum()
-        print("1) Broscuta se afla pe frunza initiala ",str(l[0]) )
-        print("Greutate broscuta: ", l[0].gCurent)
+        g.write("1) Broscuta se afla pe frunza initiala " + str(l[0]) + '\n' )
+        g.write("Greutate broscuta: " + str(l[0].gCurent) + '\n')
         i = 2
         for nod in l:
             if nod.parinte is not None:
-                print(i, ") Broscuta a sarit de la", str(nod.parinte), "la", str(nod) )
-                print("Broscuta a mancat", nod.parinte.insecteMancate, "insecte. Greutate broscuta:", nod.parinte.gCurent)
+                g.write(str(i) +  ") Broscuta a sarit de la " + str(nod.parinte) + " la " + str(nod) + '\n')
+                g.write("Broscuta a mancat" + str(nod.parinte.insecteMancate) + " insecte. Greutate broscuta: " + str(nod.parinte.gCurent) + '\n')
                 i += 1
 
 
-        print("Broscuta a ajuns la mal in", len(l), "sarituri.")
+        g.write(str(i) + ") Broscuta a ajuns la mal in " + str(len(l)) + " sarituri.\n")
+        g.close()
         return len(l)
 
     def contineInDrum(self, infoNodNou):
@@ -63,6 +64,7 @@ class Graph:
     def __init__(self, nume_fisier):
         f = open(nume_fisier, "r")
         continutFisier = f.read()
+        f.close()
         infoFisier = continutFisier.split('\n')
 
         self.raza = int(infoFisier[0])
@@ -135,9 +137,14 @@ def a_star_optim(gr, tip_euristica):
         closed.append(nodCurent)
 
         if gr.testeaza_scop(nodCurent):
-            print("Solutie: ")
-            nodCurent.afisDrum()
-            print("\n--------------------\n")
+            g = open("output/a_star_optim.txt", "a")
+            g.write("Solutie: \n\n")
+            g.close()
+            nodCurent.afisDrum("output/a_star_optim.txt")
+
+            g = open("output/a_star_optim.txt", "a")
+            g.write("\n----------------\n\n")
+            g.close()
             return
 
         lSuccesori = gr.genereazaSuccesori(nodCurent, tip_euristica)
@@ -169,7 +176,8 @@ def a_star_optim(gr, tip_euristica):
                 i += 1
             c.insert(i, s)
 
-def a_star(gr, nrSolutiiCautate=2, tip_euristica="euristica banala"):
+def a_star(gr, nrSolutiiCautate, tip_euristica="euristica banala"):
+
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
@@ -185,10 +193,15 @@ def a_star(gr, nrSolutiiCautate=2, tip_euristica="euristica banala"):
         nodCurent = c.pop(0)
 
         if gr.testeaza_scop(nodCurent):
-            print("Solutie: ", end="\n")
-            nodCurent.afisDrum()
-            print("\n----------------\n")
-            input()
+            g = open("output/a_star.txt", "a")
+            g.write("Solutie: \n\n")
+            g.close()
+            nodCurent.afisDrum("output/a_star.txt")
+
+            g = open("output/a_star.txt", "a")
+            g.write("\n----------------\n")
+            g.close()
+
             nrSolutiiCautate -= 1
             if nrSolutiiCautate == 0:
                 return
@@ -217,9 +230,15 @@ def uniform_cost(gr, nrSolutiiCautate=1):
         nodCurent = c.pop(0)
 
         if gr.testeaza_scop(nodCurent):
-            print("Solutie: ", end="\n")
-            nodCurent.afisDrum()
-            print("\n----------------\n")
+            g = open("output/UCS.txt", "a")
+            g.write("Solutie: \n\n")
+            g.close()
+            nodCurent.afisDrum("output/UCS.txt")
+
+            g = open("output/UCS.txt", "a")
+            g.write("\n----------------\n\n")
+            g.close()
+
             nrSolutiiCautate -= 1
             if nrSolutiiCautate == 0:
                 return
@@ -249,7 +268,7 @@ def ida_star(gr, nrSolutiiCautate):
                        0)]
 
     while True:
-        print("Limita de pornire: ", limita)
+        # print("Limita de pornire: ", limita)
 
         nrSolutiiCautate, rez = construieste_drum(
             gr, c[0], limita, nrSolutiiCautate
@@ -257,11 +276,13 @@ def ida_star(gr, nrSolutiiCautate):
         if rez == "gata":
             break
         if rez == float("inf"):
-            print("Nu exista solutii!")
+            g = open("output/ida_star.txt", "a")
+            g.write("Nu exista solutii!:\n\n")
+            g.close()
             break
         limita = rez
-        print(">>> Limita noua: ", limita)
-        input()
+        # print(">>> Limita noua: ", limita)
+        # input()
 
 
 def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
@@ -269,11 +290,16 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
         return nrSolutiiCautate, nodCurent.f
 
     if gr.testeaza_scop(nodCurent) and nodCurent.f == limita:
-        print("Solutie: ")
-        nodCurent.afisDrum()
-        print(limita)
-        print("\n----------------\n")
-        input()
+        g = open("output/ida_star.txt", "a")
+        g.write("Solutie: \n\n")
+        g.close()
+        nodCurent.afisDrum("output/ida_star.txt")
+
+        g = open("output/ida_star.txt", "a")
+        g.write("Limita : " + str(limita))
+        g.write("\n\n----------------\n\n")
+        g.close()
+
         nrSolutiiCautate -= 1
         if nrSolutiiCautate == 0:
             return nrSolutiiCautate, "gata"
@@ -292,11 +318,10 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
 
 
 
-gr = Graph("input.txt")
 
-# print("\n\n##################\nSolutie obtinuta cu A*:")
+gr = Graph(sys.argv[1])
+nrSolutiiCautate = int(sys.argv[2])
 # a_star_optim(gr, "euristica_admisibila_2")
-# a_star(gr, 2, "euristica banala")
-# uniform_cost(gr, nrSolutiiCautate=2)
-
-ida_star(gr, nrSolutiiCautate=3)
+# a_star(gr, nrSolutiiCautate, "euristica banala")
+# uniform_cost(gr, nrSolutiiCautate)
+ida_star(gr, nrSolutiiCautate)
