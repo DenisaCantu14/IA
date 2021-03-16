@@ -1,9 +1,10 @@
 import sys
 import math
+import timeit
 
 class NodParcurgere:
 
-    def __init__(self, info, x, y, greutateM, greutateC, parinte, insecte, cost=0, h=0 ):
+    def __init__(self, info, x, y, greutateM, greutateC, parinte, insecte, insecteM, cost, h ):
         # info = (x, y, greutate)
         self.info = info
         self.x = x
@@ -14,7 +15,7 @@ class NodParcurgere:
         self.parinte = parinte
         self.h = h
         self.insecte = insecte
-        self.insecteMancate = insecte
+        self.insecteMancate = insecteM
         self.f = self.cost + self.h
 
     def obtineDrum(self):
@@ -34,11 +35,12 @@ class NodParcurgere:
         for nod in l:
             if nod.parinte is not None:
                 g.write(str(i) +  ") Broscuta a sarit de la " + str(nod.parinte) + " la " + str(nod) + '\n')
-                g.write("Broscuta a mancat" + str(nod.parinte.insecteMancate) + " insecte. Greutate broscuta: " + str(nod.parinte.gCurent) + '\n')
+                g.write("Broscuta a mancat " + str(nod.parinte.insecteMancate) + " insecte. Greutate broscuta: " + str(nod.parinte.gCurent) + '\n')
                 i += 1
 
 
         g.write(str(i) + ") Broscuta a ajuns la mal in " + str(len(l)) + " sarituri.\n")
+        g.write("Cost: " + str(self.cost) + '\n')
         g.close()
         return len(l)
 
@@ -99,20 +101,22 @@ class Graph:
         listaSuccesori = []
         for idx in range (len(self.noduri)):
             dist = math.sqrt((nodCurent.x - self.noduri[idx][1]) ** 2 + (nodCurent.y - self.noduri[idx][2]) ** 2)
-            if nodCurent.gCurent / 3 < dist:
+            if nodCurent.gCurent / 3 < dist or nodCurent.gCurent - 1 > self.noduri[idx][4]:
                 continue
             else:
-                nodNou = NodParcurgere(self.noduri[idx][0],  #info
-                                       self.noduri[idx][1],  #x
-                                       self.noduri[idx][2],  #y
-                                       self.noduri[idx][4],  #g
-                                       self.noduri[idx][3] + nodCurent.gCurent, #greuatte curenta
+                nodNou = NodParcurgere(self.noduri[idx][0],  # info
+                                       self.noduri[idx][1],  # x
+                                       self.noduri[idx][2],  # y
+                                       self.noduri[idx][4],  # gm
+                                       self.noduri[idx][3] + nodCurent.gCurent - 1,  # greuatte curenta
                                        nodCurent,
                                        0,
+                                       self.noduri[idx][3],
                                        nodCurent.cost + 1,
                                        self.euristica_banala(self.noduri[idx][0], tip_euristica))
                 if not nodCurent.contineInDrum(nodNou.info):
                     listaSuccesori.append(nodNou)
+
         return listaSuccesori
 
 
@@ -121,13 +125,15 @@ class Graph:
 
 
 def a_star_optim(gr, tip_euristica):
+    start = timeit.default_timer()
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
                        gr.start[4],
-                       gr.start[4],
+                       gr.g,
                        None,
                        gr.start[3],
+                       0,
                        0,
                        gr.euristica_banala(gr.start[0], tip_euristica))]
     closed = []
@@ -137,16 +143,20 @@ def a_star_optim(gr, tip_euristica):
         closed.append(nodCurent)
 
         if gr.testeaza_scop(nodCurent):
+
             g = open("output/a_star_optim.txt", "a")
             g.write("Solutie: \n\n")
             g.close()
             nodCurent.afisDrum("output/a_star_optim.txt")
 
+            stop = timeit.default_timer()
+            time = stop - start
+
             g = open("output/a_star_optim.txt", "a")
+            g.write("Timp: " + str(time))
             g.write("\n----------------\n\n")
             g.close()
             return
-
         lSuccesori = gr.genereazaSuccesori(nodCurent, tip_euristica)
         lSuccesoriCopy = lSuccesori.copy()
         for s in lSuccesoriCopy:
@@ -177,14 +187,15 @@ def a_star_optim(gr, tip_euristica):
             c.insert(i, s)
 
 def a_star(gr, nrSolutiiCautate, tip_euristica="euristica banala"):
-
+    start = timeit.default_timer()
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
                        gr.start[4],
-                       gr.start[4],
+                       gr.g,
                        None,
                        gr.start[3],
+                       0,
                        0,
                        gr.euristica_banala(gr.start[0], tip_euristica))]
 
@@ -197,9 +208,11 @@ def a_star(gr, nrSolutiiCautate, tip_euristica="euristica banala"):
             g.write("Solutie: \n\n")
             g.close()
             nodCurent.afisDrum("output/a_star.txt")
-
+            stop = timeit.default_timer()
+            time = stop - start
             g = open("output/a_star.txt", "a")
-            g.write("\n----------------\n")
+            g.write("Time: " + str(time))
+            g.write("\n----------------\n\n")
             g.close()
 
             nrSolutiiCautate -= 1
@@ -215,13 +228,15 @@ def a_star(gr, nrSolutiiCautate, tip_euristica="euristica banala"):
             c.insert(i, s)
 
 def uniform_cost(gr, nrSolutiiCautate=1):
+    start = timeit.default_timer()
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
                        gr.start[4],
-                       gr.start[4],
+                       gr.g,
                        None,
                        gr.start[3],
+                       0,
                        0,
                        0)]
 
@@ -234,8 +249,10 @@ def uniform_cost(gr, nrSolutiiCautate=1):
             g.write("Solutie: \n\n")
             g.close()
             nodCurent.afisDrum("output/UCS.txt")
-
+            stop = timeit.default_timer()
+            time = stop - start
             g = open("output/UCS.txt", "a")
+            g.write("Time: " + str(time))
             g.write("\n----------------\n\n")
             g.close()
 
@@ -256,23 +273,23 @@ def uniform_cost(gr, nrSolutiiCautate=1):
                 c.append(s)
 
 def ida_star(gr, nrSolutiiCautate):
+    start = timeit.default_timer()
     limita = gr.euristica_banala(gr.start[0], "euristica_banala")
     c = [NodParcurgere(gr.start[0],
                        gr.start[1],
                        gr.start[2],
                        gr.start[4],
-                       gr.start[4],
+                       gr.g,
                        None,
                        gr.start[3],
+                       0,
                        0,
                        0)]
 
     while True:
         # print("Limita de pornire: ", limita)
 
-        nrSolutiiCautate, rez = construieste_drum(
-            gr, c[0], limita, nrSolutiiCautate
-        )
+        nrSolutiiCautate, rez = construieste_drum(gr, c[0], limita, nrSolutiiCautate)
         if rez == "gata":
             break
         if rez == float("inf"):
@@ -319,9 +336,14 @@ def construieste_drum(gr, nodCurent, limita, nrSolutiiCautate):
 
 
 
-gr = Graph(sys.argv[1])
-nrSolutiiCautate = int(sys.argv[2])
-# a_star_optim(gr, "euristica_admisibila_2")
-# a_star(gr, nrSolutiiCautate, "euristica banala")
+# gr = Graph(sys.argv[1])
+# nrSolutiiCautate = int(sys.argv[2])
+# timeOut = int(sys.argv[3])
+gr = Graph("input/input.txt")
+nrSolutiiCautate = int(2)
+timeOut = int(4)
+
+# a_star_optim(gr, "euristica_banala")
+a_star(gr, nrSolutiiCautate, "euristica banala")
 # uniform_cost(gr, nrSolutiiCautate)
-ida_star(gr, nrSolutiiCautate)
+#ida_star(gr, nrSolutiiCautate)
